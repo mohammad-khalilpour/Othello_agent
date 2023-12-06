@@ -250,18 +250,63 @@ def betterEvaluationFunction(currentGameState):
     gameState.getScore(index) -> int
 
     """
-
-    "*** YOUR CODE HERE ***"
+    players_count = currentGameState.getNumAgents()
 
     # parity
+    max_player_coins = currentGameState.getScore(0)
+    min_players_coins = 0
+    for i in currentGameState.getScore()[1:players_count]:
+        min_players_coins += i
+    parity = 100 * (max_player_coins - min_players_coins) / (max_player_coins + min_players_coins)
 
     # corners
+    max_player_corners = 0
+    min_players_corners = 0
+    for corner in currentGameState.getCorners():
+        if corner == 0:
+            max_player_corners += 1
+        elif corner != -1:
+            min_players_corners += 1
+    if max_player_corners + min_players_corners != 0:
+        corners = 100 * (max_player_corners - min_players_corners) / (max_player_corners + min_players_corners)
+    else:
+        corners = 0
 
     # mobility
+    max_player_mobility = currentGameState.getLegalActions(0).__len__()
+    min_player_mobility = 0
+    for i in range(1, players_count):
+        min_player_mobility += currentGameState.getLegalActions(i).__len__()
+    if max_player_mobility + min_player_mobility != 0:
+        mobility = 100 * (max_player_mobility - min_player_mobility) / (max_player_mobility + min_player_mobility)
+    else:
+        mobility = 0
 
     # stability
+    stability_static = [
+        [4, -3, 2, 2, 2, 2, -3, 4],
+        [-3, -4, -1, -1, -1, -1, -4, -3],
+        [2, -1, 1, 0, 0, 1, -1, 2],
+        [2, -1, 0, 1, 1, 0, -1, 2],
+        [2, -1, 0, 1, 1, 0, -1, 2],
+        [2, -1, 1, 0, 0, 1, -1, 2],
+        [-3, -4, -1, -1, -1, -1, -4, -3],
+        [4, -3, 2, 2, 2, 2, -3, 4],
+    ]
+    max_player_stability = 0
+    min_players_stability = 0
+    for piece in currentGameState.getPieces(0):
+        max_player_stability += stability_static[piece[0]][piece[1]]
+    for i in range(1, players_count):
+        for piece in currentGameState.getPieces(i):
+            min_players_stability += stability_static[piece[0]][piece[1]]
 
-    util.raiseNotDefined()
+    if max_player_mobility + min_players_stability != 0:
+        stability = 100 * (max_player_mobility - min_players_stability) / (max_player_mobility + min_players_stability)
+    else:
+        stability = 0
+
+    return 5 * parity + 5 * corners + mobility + stability
 
 
 # Abbreviation
