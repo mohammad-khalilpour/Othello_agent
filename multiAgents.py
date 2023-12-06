@@ -139,14 +139,51 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def getAction(self, gameState):
+    def getAction(self, gameState: GameState):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
 
         You should keep track of alpha and beta in each node to be able to implement alpha-beta pruning.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        def best_action(index, depth, current_state: GameState, alpha, beta):
+            if current_state.isGameFinished():
+                return current_state.getScore(0), None
+            if depth == 0:
+                return self.evaluationFunction(current_state), None
+            players = current_state.getNumAgents()
+            legal_actions = current_state.getLegalActions(index)
+            best_act = None
+            best_value = None
+            max_value = -1000000
+            min_value = 1000000
+            for action in legal_actions:
+                next_state = current_state.generateSuccessor(index, action)
+                val, _ = best_action((index + 1) % players, depth - 1, next_state, alpha, beta)
+                if index == 0:
+                    if val > beta:
+                        return val, action
+                    alpha = max(alpha, val)
+
+                    if val > max_value:
+                        max_value = val
+                        best_act = action
+                    best_value = max_value
+                else:
+                    if val < alpha:
+                        return val, action
+                    beta = min(beta, val)
+
+                    if val < min_value:
+                        min_value = val
+                        best_act = action
+                    best_value = min_value
+
+            return best_value, best_act
+
+        _, act = best_action(self.index, self.depth, gameState, -100, 100)
+        return act
+
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
