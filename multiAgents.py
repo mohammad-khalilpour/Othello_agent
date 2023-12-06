@@ -1,6 +1,7 @@
 from Agents import Agent
 import util
 import random
+from Game import GameState
 
 
 class ReflexAgent(Agent):
@@ -87,7 +88,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def getAction(self, state):
+    def getAction(self, state: GameState):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
 
@@ -99,8 +100,35 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.getLegalActions(agentIndex) -> list
         self.evaluationFunction(gameState) -> float
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        def best_action(index, depth, current_state: GameState):
+            if current_state.isGameFinished():
+                return current_state.getScore()
+            if depth == 0:
+                return self.evaluationFunction(current_state), None
+            players = current_state.getNumAgents()
+            legal_actions = current_state.getLegalActions(index)
+            best_value = None
+            best_act = None
+            max_value = -1000000
+            min_value = 1000000
+            for action in legal_actions:
+                next_state = current_state.generateSuccessor(index, action)
+                val, _ = best_action((index + 1) % players, depth - 1, next_state)
+                if index == 0:
+                    if val > max_value:
+                        max_value = val
+                        best_act = action
+                    best_value = max_value
+                else:
+                    if val < min_value:
+                        min_value = val
+                        best_act = action
+                    best_value = min_value
+            return best_value, best_act
+
+        _, act = best_action(self.index, self.depth, state)
+        return act
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
